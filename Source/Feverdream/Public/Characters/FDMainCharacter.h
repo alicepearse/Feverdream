@@ -30,9 +30,9 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	USpringArmComponent* SpringArmComp;
 
-	/** First person perspective camera component */
-	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* FPPCameraComp;
+// 	/** First person perspective camera component */
+// 	UPROPERTY(VisibleAnywhere)
+// 	UCameraComponent* FPPCameraComp;
 
 	/** Third person perspective camera component */
 	UPROPERTY(VisibleAnywhere)
@@ -47,6 +47,37 @@ protected:
 
 	// Move right function
 	void MoveRight(float Value);
+
+	/** Called via input to turn at a given rate
+	 * @param Rate This is a normalized rate, i.e. 1.0 means 100% of desired turn rate.
+	 */
+	void TurnAtRate(float Rate);
+
+	/** Called via input to look up/down at a given rate
+	 * @param Rate This is a normalized rate, i.e. 1.0 means 100% of desired look up/down rate.
+	 */
+	void LookUpRate(float Rate);
+
+	/** Base turn rate to scale turning functions for the camera */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	float BaseTurnRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
+	float BaseLookUpRate;
+
+	/**
+	 * Action Input functions
+	 */
+
+	 void Casting();
+
+	 /** Projectile class variable needed for casting function */
+	 UPROPERTY(EditAnywhere, Category = Casting)
+	 TSubclassOf<AActor>ProjectileClass;
+
+	 /** Space to select socket for Casting */
+	 UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casting)
+	 FName CastingSocket;
 
 public:	
 	// Called every frame

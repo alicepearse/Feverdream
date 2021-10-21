@@ -74,4 +74,10 @@ Plugins/*/Intermediate/*
 DerivedDataCache/*
 
 # Purchased assets
+Content/FeverDream/Art/*
 Content/FeverDream/Characters/*
+Content/FeverDream/Effects/*
+Content/FeverDream/Placeables/*
+Content/FeverDream/Weapons/*
+
+
