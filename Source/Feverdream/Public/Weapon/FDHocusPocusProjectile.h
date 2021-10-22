@@ -4,16 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Weapon/FDProjectileBase.h"
 #include "FDHocusPocusProjectile.generated.h"
 
-class USphereComponent;
-class UProjectileMovementComponent;
-class UParticleSystemComponent;
 class UParticleSystem;
 
 
 UCLASS()
-class FEVERDREAM_API AFDHocusPocusProjectile : public AActor
+class FEVERDREAM_API AFDHocusPocusProjectile : public AFDProjectileBase
 {
 	GENERATED_BODY()
 	
@@ -21,26 +19,6 @@ public:
 	// Sets default values for this actor's properties
 	AFDHocusPocusProjectile();
 
-protected:
-
-	/**
-	 * Scene Components
-	 */
-
-	UPROPERTY(VisibleAnywhere)
-	USphereComponent* SphereComp;
-
-	UPROPERTY(VisibleAnywhere)
-	UProjectileMovementComponent* MovementComp;
-
-	UPROPERTY(VisibleAnywhere)
-	UParticleSystemComponent* MovementEffectComp;
-
-	UPROPERTY(EditDefaultsOnly, Category = "FX")
-	UParticleSystem* HitEffect;
-
-	UFUNCTION()
-	void OnProjectileHitExplode(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

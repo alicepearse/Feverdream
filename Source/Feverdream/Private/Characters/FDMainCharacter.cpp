@@ -6,6 +6,8 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Gameframework/CharacterMovementComponent.h"
+#include "Components/FDInteractionComponent.h"
+#include <DrawDebugHelpers.h>
 
 // Sets default values
 AFDMainCharacter::AFDMainCharacter()
@@ -22,6 +24,10 @@ AFDMainCharacter::AFDMainCharacter()
 
 	TPPCameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("3PCameraComp"));
 	TPPCameraComp->SetupAttachment(SpringArmComp);
+
+	ActiveCamera = TPPCameraComp;
+
+	InteractionComp = CreateDefaultSubobject<UFDInteractionComponent>(TEXT("InteractionComp"));
 
 	// Don't rotate when the camera rotates
 	// Let that just affect the camera
@@ -90,16 +96,79 @@ void AFDMainCharacter::LookUpRate(float Rate)
 
 void AFDMainCharacter::Casting()
 {
-	// Spawn projectile
+	CalculateAim();
 
+	PlayAnimMontage(CastingAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_Casting, this, &AFDMainCharacter::Casting_TimeElapsed, 0.5f);
+}
+
+void AFDMainCharacter::CalculateAim()
+{
+	// Find where the camera target viewpoint is
+	FMinimalViewInfo CameraPerspective;
+	ActiveCamera->GetCameraView(0.0f, CameraPerspective);
+	CameraLocation = CameraPerspective.Location;
+	FRotator CameraRotation = CameraPerspective.Rotation;
+	TargetViewPoint = CameraLocation + (CameraRotation.Vector() * 1000);
+
+// 	DrawDebugLine(GetWorld(), CameraLocation, TargetViewPoint, FColor::Red, false, 2.0f, 0, 2.0f);
+}
+
+void AFDMainCharacter::Casting_TimeElapsed()
+{
+	// Find the location of the point from which to perform casting projectile
 	FVector CastingLocation = GetMesh()->GetSocketLocation(CastingSocket);
-	FTransform SpawnTransform = FTransform(GetControlRotation(), CastingLocation);
+
+	// Only query objects with collision WorldDynamic and WorldStatic
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+
+	// Find which objects will be hit between the camera and the camera target viewpoint
+	TArray<FHitResult> ObjectsInSight;
+	bool bSuccessfulHit = GetWorld()->LineTraceMultiByObjectType(ObjectsInSight, CameraLocation, TargetViewPoint, ObjectQueryParams);
+
+	// Decide which location will be used for impact
+	FVector ImpactLocation;
+
+	if (bSuccessfulHit)
+	{
+		for (FHitResult ObjectInSight : ObjectsInSight)
+		{
+			ImpactLocation = ObjectInSight.Location;
+			return;
+		}
+	}
+	else
+	{
+		// if no objects were hit then use TargetViewPoint as impact location
+		ImpactLocation = TargetViewPoint;
+	}
+
+	// Calculate projectile spawn rotation
+	FRotator ProjectileRotation = (ImpactLocation - CastingLocation).Rotation();
+
+	// Spawn projectile
+	FTransform SpawnTransform = FTransform(ProjectileRotation, CastingLocation);
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	SpawnParams.Instigator = this;
 
-	ensure(ProjectileClass!=nullptr);
+	if (ensure(ProjectileClass != nullptr))
+	{
+		GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTransform, SpawnParams);
+// 		DrawDebugSphere(GetWorld(), ImpactLocation, 30.0f, 32, FColor::Green, false, 2.0f);
+	}
+}
 
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTransform, SpawnParams);
+void AFDMainCharacter::PrimaryInteract()
+{
+	if (InteractionComp)
+	{
+		InteractionComp->PrimaryInteract();
+	}
+
 }
 
 // Called every frame
@@ -124,6 +193,7 @@ void AFDMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Casting", IE_Pressed, this, &AFDMainCharacter::Casting);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AFDMainCharacter::PrimaryInteract);
 
 }
 

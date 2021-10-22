@@ -8,6 +8,8 @@
 
 class USpringArmComponent;
 class UCameraComponent;
+class UFDInteractionComponent;
+class UAnimMontage;
 
 UCLASS()
 class FEVERDREAM_API AFDMainCharacter : public ACharacter
@@ -21,6 +23,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
 
 	/**
 	 * Scene components
@@ -37,6 +40,15 @@ protected:
 	/** Third person perspective camera component */
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* TPPCameraComp;
+
+	/** Used to keep track of which camera is active FPP/TPP */
+	UCameraComponent* ActiveCamera;
+
+	/** Interaction component for interacting with objects */
+	UPROPERTY(VisibleAnywhere)
+	UFDInteractionComponent* InteractionComp;
+
+protected:
 
 	/**
 	 * Character Movement
@@ -62,22 +74,50 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseTurnRate;
 
+	/** Base look up rate to scale look up functions for the camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 	float BaseLookUpRate;
+
+
+protected:
 
 	/**
 	 * Action Input functions
 	 */
 
-	 void Casting();
+	void Casting();
 
-	 /** Projectile class variable needed for casting function */
-	 UPROPERTY(EditAnywhere, Category = Casting)
-	 TSubclassOf<AActor>ProjectileClass;
+	/** Projectile class variable needed for casting function */
+	UPROPERTY(EditAnywhere, Category = "Casting")
+	TSubclassOf<AActor>ProjectileClass;
+	
+	/** Space to select socket for Casting */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Casting")
+	FName CastingSocket;
 
-	 /** Space to select socket for Casting */
-	 UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Casting)
-	 FName CastingSocket;
+	/** Casting Animation Montage */
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* CastingAnim;
+
+	/** Timer for Casting Animation */
+	FTimerHandle TimerHandle_Casting;
+
+	/** Stores the camera location at aim - used to calculate an accurate aim target */
+	FVector CameraLocation;
+
+	/** Stores the target aim point of the player from their camera perspective */
+	FVector TargetViewPoint;
+
+	// used to calculate where the player is aiming
+	void CalculateAim();
+
+	// Function called by timer to execute casting
+	void Casting_TimeElapsed();
+
+	void PrimaryInteract();
+
+
+
 
 public:	
 	// Called every frame

@@ -9,8 +9,6 @@
 // Sets default values
 AFDReactiveExplosive::AFDReactiveExplosive()
 {
-	PrimaryActorTick.bCanEverTick = false;
-
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>("StaticMesh");
 	RootComponent = StaticMeshComp;
 	StaticMeshComp->SetSimulatePhysics(true);
@@ -29,18 +27,11 @@ void AFDReactiveExplosive::OnHitExplode(UPrimitiveComponent* HitComponent, AActo
 	RadialForceComp->FireImpulse();
 }
 
-// Called when the game starts or when spawned
-void AFDReactiveExplosive::BeginPlay()
+void AFDReactiveExplosive::PostInitializeComponents()
 {
-	Super::BeginPlay();
+	Super::PostInitializeComponents();
 
 	StaticMeshComp->OnComponentHit.AddDynamic(this, &AFDReactiveExplosive::OnHitExplode);
 }
 
-// Called every frame
-void AFDReactiveExplosive::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
