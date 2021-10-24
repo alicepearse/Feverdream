@@ -5,35 +5,39 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "UI/FDGameplayInterface.h"
-#include "FDItemChest.generated.h"
+#include "FDItemDispensaryBase.generated.h"
+
+class UStaticMeshComponent;
+class UParticleSystemComponent;
 
 UCLASS()
-class FEVERDREAM_API AFDItemChest : public AActor, public IFDGameplayInterface
+class FEVERDREAM_API AFDItemDispensaryBase : public AActor, public IFDGameplayInterface
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AFDItemChest();
+	AFDItemDispensaryBase();
 
 protected:
-	
+
 	/**
 	 * Scene Components
 	 */
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* ChestBase;
+	UStaticMeshComponent* DispensaryMeshBase;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* ChestBaseInterior;
+	UPROPERTY(VisibleAnywhere)
+	UParticleSystemComponent* DispenseEffect;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* ChestLid;
+	UPROPERTY(EditAnywhere, Category = "Items")
+	TSubclassOf<AActor> DispensedItemsClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	UStaticMeshComponent* ChestLidInterior;
+	UPROPERTY(VisibleAnywhere, Category = "Items")
+	AActor* DispensedItems;
 
+protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -42,9 +46,5 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
-
-	/** The target pitch value for the open lid animation of the chest */
-	UPROPERTY(EditAnywhere)
-	float TargetPitchOpenLid;
 
 };

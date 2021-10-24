@@ -2,12 +2,29 @@
 
 
 #include "Weapon/FDHocusPocusProjectile.h"
+#include "Components/FDAttributeComponent.h"
+#include "Components/SphereComponent.h"
+#include "Weapon/FDProjectileBase.h"
 
-// Sets default values
-AFDHocusPocusProjectile::AFDHocusPocusProjectile()
+void AFDHocusPocusProjectile::PostInitializeComponents()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	Super::PostInitializeComponents();
+
+	SphereComp->OnComponentBeginOverlap.AddDynamic(this, &AFDHocusPocusProjectile::OnActorOverlap);
+}
+
+void AFDHocusPocusProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor && OtherActor != GetInstigator())
+	{
+		UFDAttributeComponent* AttributeComp = Cast<UFDAttributeComponent>(OtherActor->GetComponentByClass(UFDAttributeComponent::StaticClass()));
+		if (AttributeComp)
+		{
+			AttributeComp->ApplyHealthChange(-20.0f);
+
+			Destroy();
+		}
+	}
 }
 
 // Called when the game starts or when spawned

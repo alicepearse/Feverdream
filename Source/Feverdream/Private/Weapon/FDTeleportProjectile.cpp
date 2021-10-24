@@ -5,15 +5,21 @@
 #include "Kismet/GameplayStatics.h"
 #include "Weapon/FDProjectileBase.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Gameframework/ProjectileMovementComponent.h"
 
 void AFDTeleportProjectile::Teleport()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Teleport called"));
-	AActor* TempInst = GetInstigator();
+	AActor* ActorToTeleport = GetInstigator();
+	if (ensure(ActorToTeleport))
+	{
+		TeleportLocation = GetActorLocation();
 
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *TempInst->GetName());
+		// Make sure we always spawn upright in the direction of the projectile
+		float ProjectileDirection = GetActorRotation().Roll;
+		TeleportRotation = FRotator(0.0f, 0.0f, ProjectileDirection);
 
-	GetInstigator()->TeleportTo(TeleportLocation, TeleportRotation);
+		ActorToTeleport->TeleportTo(TeleportLocation, TeleportRotation);
+	}
 
 	Destroy();
 }
@@ -25,19 +31,13 @@ void AFDTeleportProjectile::SelfDissipate()
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, GetActorLocation(), GetActorRotation());
 	}
 
-	TeleportLocation = GetActorLocation();
+	MovementEffectComp->DeactivateSystem();
+	MovementComp->StopMovementImmediately();
 
-	// Make sure we always spawn upright the direction of the projectile
-	TeleportRotation = GetActorRotation();
-	TeleportRotation.Pitch = 0.0f;
-	TeleportRotation.Roll = 0.0f;
-
- 	GetWorldTimerManager().SetTimer(TimerHandle_Teleport, this, &AFDTeleportProjectile::Teleport, 0.2f);
-
-	MovementEffectComp->DestroyComponent(false);
+ 	GetWorldTimerManager().SetTimer(TimerHandle_Teleport, this, &AFDTeleportProjectile::Teleport, 0.2f);	
 }
 
-void AFDTeleportProjectile::OnProjectileHitExplode(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AFDTeleportProjectile::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (HitEffect)
 	{

@@ -11,7 +11,7 @@ class UProjectileMovementComponent;
 class UParticleSystemComponent;
 
 
-UCLASS()
+UCLASS(ABSTRACT) // Abstract will mark this class as incomplete so it does not show in dropdown menus etc.
 class FEVERDREAM_API AFDProjectileBase : public AActor
 {
 	GENERATED_BODY()
@@ -44,7 +44,7 @@ protected:
 	FTimerHandle TimerHandle_Lifetime;
 
 	UFUNCTION()
-	virtual void OnProjectileHitExplode(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	virtual void OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	
 

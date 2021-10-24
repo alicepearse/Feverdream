@@ -30,7 +30,7 @@ AFDProjectileBase::AFDProjectileBase()
 	Lifespan = 5.0f;
 }
 
-void AFDProjectileBase::OnProjectileHitExplode(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void AFDProjectileBase::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (HitEffect)
 	{
@@ -47,7 +47,7 @@ void AFDProjectileBase::BeginPlay()
 	Super::BeginPlay();
 	
 	SphereComp->IgnoreActorWhenMoving(GetInstigator(), true);
-	SphereComp->OnComponentHit.AddDynamic(this, &AFDProjectileBase::OnProjectileHitExplode);
+	SphereComp->OnComponentHit.AddDynamic(this, &AFDProjectileBase::OnProjectileHit);
 }
 
 // Called every frame

@@ -8,6 +8,7 @@
 #include "Gameframework/CharacterMovementComponent.h"
 #include "Components/FDInteractionComponent.h"
 #include <DrawDebugHelpers.h>
+#include "Components/FDAttributeComponent.h"
 
 // Sets default values
 AFDMainCharacter::AFDMainCharacter()
@@ -29,6 +30,9 @@ AFDMainCharacter::AFDMainCharacter()
 
 	InteractionComp = CreateDefaultSubobject<UFDInteractionComponent>(TEXT("InteractionComp"));
 
+	AttributeComp = CreateDefaultSubobject<UFDAttributeComponent>(TEXT("AttributeComp"));
+
+
 	// Don't rotate when the camera rotates
 	// Let that just affect the camera
 	bUseControllerRotationPitch = false;
@@ -42,6 +46,13 @@ AFDMainCharacter::AFDMainCharacter()
 	// Set turn rates for input
 	BaseTurnRate = 65.f;
 	BaseLookUpRate = 65.f;
+}
+
+void AFDMainCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	AttributeComp->OnHealthChanged.AddDynamic(this, &AFDMainCharacter::OnHealthChanged);
 }
 
 // Called when the game starts or when spawned
@@ -123,7 +134,8 @@ void AFDMainCharacter::Casting_TimeElapsed()
 	// Only query objects with collision WorldDynamic and WorldStatic
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
-	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldStatic);	
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
 
 	// Find which objects will be hit between the camera and the camera target viewpoint
 	TArray<FHitResult> ObjectsInSight;
@@ -169,6 +181,22 @@ void AFDMainCharacter::PrimaryInteract()
 		InteractionComp->PrimaryInteract();
 	}
 
+}
+
+void AFDMainCharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float NewMaxHealth, float Delta)
+{
+	// Cause the character's material to flash when hit
+	if (Delta < 0.0f)
+	{
+		GetMesh()->SetScalarParameterValueOnMaterials("TimeToHit", GetWorld()->TimeSeconds);
+	}
+
+	// Check if player has died
+	if (NewHealth <= 0.0f && Delta < 0.0f)
+	{
+		APlayerController* PC = Cast<APlayerController>(GetController());
+		DisableInput(PC);
+	}
 }
 
 // Called every frame

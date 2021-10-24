@@ -41,6 +41,8 @@ void UFDInteractionComponent::PrimaryInteract()
 	FCollisionObjectQueryParams ObjectQueryParams;
 	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
 
+
+
 	// Get line trace start and end location from actor owner's eyes
 	AActor* MyOwner = GetOwner();
 	FVector EyeLocation;

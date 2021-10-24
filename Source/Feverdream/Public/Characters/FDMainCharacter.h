@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Components/FDAttributeComponent.h"
 #include "FDMainCharacter.generated.h"
 
 class USpringArmComponent;
 class UCameraComponent;
 class UFDInteractionComponent;
+class UFDAttributeComponent;
 class UAnimMontage;
 
 UCLASS()
@@ -21,6 +23,9 @@ public:
 	AFDMainCharacter();
 
 protected:
+
+	virtual void PostInitializeComponents() override;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
@@ -47,6 +52,10 @@ protected:
 	/** Interaction component for interacting with objects */
 	UPROPERTY(VisibleAnywhere)
 	UFDInteractionComponent* InteractionComp;
+
+	/** Attribute component for character's attributes and attribute adjustments */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UFDAttributeComponent* AttributeComp;
 
 protected:
 
@@ -116,7 +125,8 @@ protected:
 
 	void PrimaryInteract();
 
-
+	UFUNCTION()
+	void OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float MaxHealth, float Delta);
 
 
 public:	
