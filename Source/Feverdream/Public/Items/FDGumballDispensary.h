@@ -33,18 +33,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UStaticMesh* GlassMeshUnbroken;
 
-	FTimerHandle TimerHandle_ReactivateDispensary;
+	virtual void DeactivateDispensary() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bIsDispensaryActivated;
-
-	/** The time for which the dispensary must remain deactivated after interaction */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float DeactivationTime;
-
-	void DeactivateDispensary();
-
-	void ReactivateDispensary();
+	virtual void ReactivateDispensary() override;
 
 public:
 

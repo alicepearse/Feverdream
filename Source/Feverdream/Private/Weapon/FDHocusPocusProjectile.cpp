@@ -5,6 +5,12 @@
 #include "Components/FDAttributeComponent.h"
 #include "Components/SphereComponent.h"
 #include "Weapon/FDProjectileBase.h"
+#include "Framework/FDGameplayFunctionLibrary.h"
+
+AFDHocusPocusProjectile::AFDHocusPocusProjectile()
+{
+	DamageAmount = -20;
+}
 
 void AFDHocusPocusProjectile::PostInitializeComponents()
 {
@@ -15,16 +21,23 @@ void AFDHocusPocusProjectile::PostInitializeComponents()
 
 void AFDHocusPocusProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor != GetInstigator())
+	if (OtherActor && (OtherActor != GetInstigator()))
 	{
-		UFDAttributeComponent* AttributeComp = Cast<UFDAttributeComponent>(OtherActor->GetComponentByClass(UFDAttributeComponent::StaticClass()));
-		if (AttributeComp)
-		{
-			AttributeComp->ApplyHealthChange(-20.0f);
+// 		UFDAttributeComponent* AttributeComp = Cast<UFDAttributeComponent>(OtherActor->GetComponentByClass(UFDAttributeComponent::StaticClass()));
+// 		if (AttributeComp)
+// 		{
+// 			AttributeComp->ApplyHealthChange(OtherActor, DamageAmount);
+// 	
+// 			Explode();
+// 		}
 
-			Destroy();
+		if (UFDGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Apply directional damage called"));
+
+			Explode();
 		}
-	}
+ 	}
 }
 
 // Called when the game starts or when spawned

@@ -5,6 +5,9 @@
 #include "UI/FDGameplayInterface.h"
 #include "DrawDebugHelpers.h"
 
+static TAutoConsoleVariable<bool>CVarDebugDrawInteraction(TEXT("fd.DebugDrawInteraction"), false, TEXT("Enable draw debug for interaction component."), ECVF_Cheat);
+
+
 // Sets default values for this component's properties
 UFDInteractionComponent::UFDInteractionComponent()
 {
@@ -36,6 +39,8 @@ void UFDInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 void UFDInteractionComponent::PrimaryInteract()
 {
+	// ***Debug - for setting debug on or off 
+	bool bDebugDraw = CVarDebugDrawInteraction.GetValueOnGameThread();
 
 	// Only query objects with collision WorldDynamic
 	FCollisionObjectQueryParams ObjectQueryParams;
@@ -70,6 +75,12 @@ void UFDInteractionComponent::PrimaryInteract()
 
 	for (FHitResult Hit : Hits)
 	{
+		//**Debug - draw sphere on successful interaction
+		if (bDebugDraw)
+		{
+			DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, LineColor, false, 2.0f);
+		}
+
 		AActor* HitActor = Hit.GetActor();
 		if (HitActor)
 		{
@@ -83,10 +94,12 @@ void UFDInteractionComponent::PrimaryInteract()
 			}
 		}
 
-		DrawDebugSphere(GetWorld(), Hit.ImpactPoint, Radius, 32, LineColor, false, 2.0f);
 	}
 
-	DrawDebugLine(GetWorld(), EyeLocation, EndLoc, LineColor, false, 2.0f, 0, 2.0f);
-
+	//**Debug - draw line on interact performed
+	if (bDebugDraw)
+	{
+		DrawDebugLine(GetWorld(), EyeLocation, EndLoc, LineColor, false, 2.0f, 0, 2.0f);
+	}
 }
 

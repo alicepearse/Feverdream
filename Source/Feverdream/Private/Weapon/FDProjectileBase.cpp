@@ -32,15 +32,22 @@ AFDProjectileBase::AFDProjectileBase()
 
 void AFDProjectileBase::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	if (HitEffect)
-	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), HitEffect, Hit.ImpactPoint, Hit.ImpactNormal.Rotation());
-	}
-
-	Destroy();
+	Explode();
 }
 
+void AFDProjectileBase::Explode_Implementation()
+{
+	// Do not destroy if we are already being destroyed
+	if (ensure(!IsPendingKill()))
+	{
+		if (HitEffect)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(this, HitEffect, GetActorLocation(), GetActorRotation());
 
+			Destroy();
+		}
+	}
+}
 
 void AFDProjectileBase::BeginPlay()
 {

@@ -55,14 +55,6 @@ void AFDMainCharacter::PostInitializeComponents()
 	AttributeComp->OnHealthChanged.AddDynamic(this, &AFDMainCharacter::OnHealthChanged);
 }
 
-// Called when the game starts or when spawned
-void AFDMainCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-
 void AFDMainCharacter::MoveForward(float Value)
 {
 	if ((Controller != nullptr) && (Value != 0.f))
@@ -183,6 +175,11 @@ void AFDMainCharacter::PrimaryInteract()
 
 }
 
+FVector AFDMainCharacter::GetPawnViewLocation() const
+{
+	return ActiveCamera->GetComponentLocation();
+}
+
 void AFDMainCharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float NewMaxHealth, float Delta)
 {
 	// Cause the character's material to flash when hit
@@ -199,12 +196,6 @@ void AFDMainCharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComp
 	}
 }
 
-// Called every frame
-void AFDMainCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 
 // Called to bind functionality to input
 void AFDMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -223,5 +214,10 @@ void AFDMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AFDMainCharacter::PrimaryInteract);
 
+}
+
+void AFDMainCharacter::HealSelf(float Amount /*= 100.0f*/)
+{
+	AttributeComp->ApplyHealthChange(this, Amount);
 }
 

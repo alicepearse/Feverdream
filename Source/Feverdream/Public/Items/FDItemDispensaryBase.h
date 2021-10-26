@@ -37,13 +37,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, Category = "Items")
 	AActor* DispensedItems;
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	FTimerHandle TimerHandle_ReactivateDispensary;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsDispensaryActivated;
+
+	/** The time for which the dispensary must remain deactivated after interaction */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float DeactivationTime;
+
+	virtual void DeactivateDispensary();
+
+	virtual void ReactivateDispensary();
+
+	virtual void SetDispensaryState(bool bNewIsActivated);
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 

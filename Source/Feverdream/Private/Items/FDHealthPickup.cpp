@@ -2,26 +2,38 @@
 
 
 #include "Items/FDHealthPickup.h"
+#include "Components/FDAttributeComponent.h"
+#include <Kismet/GameplayStatics.h>
 
 // Sets default values
 AFDHealthPickup::AFDHealthPickup()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-// Called when the game starts or when spawned
-void AFDHealthPickup::BeginPlay()
+void AFDHealthPickup::Interact_Implementation(APawn* InstigatorPawn)
 {
-	Super::BeginPlay();
-	
+	if (!ensure(InstigatorPawn))
+	{
+		return;
+	}
+
+	UFDAttributeComponent* AttributeComp = Cast<UFDAttributeComponent>(InstigatorPawn->GetComponentByClass(UFDAttributeComponent::StaticClass()));
+	if (ensure(AttributeComp))
+	{
+		// Prevent pickup if instigator is at max health
+		if (AttributeComp->GetHealth() < AttributeComp->GetMaxHealth())
+		{
+			AttributeComp->ApplyHealthChange(this, 20.0f);
+
+			if (ensure(PickupEffect))
+			{
+				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PickupEffect, GetActorLocation(), GetActorRotation());
+			}
+
+			Destroy();
+		}
+	}
 }
 
-// Called every frame
-void AFDHealthPickup::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
 

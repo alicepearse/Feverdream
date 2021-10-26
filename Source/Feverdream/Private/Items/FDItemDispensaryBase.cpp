@@ -15,21 +15,30 @@ AFDItemDispensaryBase::AFDItemDispensaryBase()
 
 	DispenseEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MeshEffect"));
 	DispenseEffect->SetupAttachment(DispensaryMeshBase);
+
+	// Set default values
+	bIsDispensaryActivated = true;
+	DeactivationTime = 10.0f;
 }
 
-// Called when the game starts or when spawned
-void AFDItemDispensaryBase::BeginPlay()
+void AFDItemDispensaryBase::DeactivateDispensary()
 {
-	Super::BeginPlay();
-	
+	SetDispensaryState(false);
+
+	// Reactive the dispensary after elapsed time(seconds)
+	GetWorldTimerManager().SetTimer(TimerHandle_ReactivateDispensary, this, &AFDItemDispensaryBase::ReactivateDispensary, DeactivationTime);
 }
 
-// Called every frame
-void AFDItemDispensaryBase::Tick(float DeltaTime)
+void AFDItemDispensaryBase::ReactivateDispensary()
 {
-	Super::Tick(DeltaTime);
-
+	SetDispensaryState(true);
 }
+
+void AFDItemDispensaryBase::SetDispensaryState(bool bNewIsActivated)
+{
+	SetActorEnableCollision(bNewIsActivated);
+}
+
 
 void AFDItemDispensaryBase::Interact_Implementation(APawn* InstigatorPawn)
 {
@@ -43,6 +52,8 @@ void AFDItemDispensaryBase::Interact_Implementation(APawn* InstigatorPawn)
 		FVector SpawnLocation = FVector(GetActorLocation().X, GetActorLocation().Y + 100.0f,GetActorLocation().Z + 100.0f);
 
 		DispensedItems = GetWorld()->SpawnActor<AActor>(DispensedItemsClass, SpawnLocation, SpawnRotation, SpawnParams);
+
+		DeactivateDispensary();
 	}
 }
 

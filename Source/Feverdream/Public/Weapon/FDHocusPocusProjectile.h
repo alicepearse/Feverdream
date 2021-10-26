@@ -13,8 +13,14 @@ class FEVERDREAM_API AFDHocusPocusProjectile : public AFDProjectileBase
 {
 	GENERATED_BODY()
 
+public:
+	
+	AFDHocusPocusProjectile();
 
 protected:
+
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	float DamageAmount;
 	
 	virtual void PostInitializeComponents() override;
 

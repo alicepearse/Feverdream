@@ -14,7 +14,7 @@ class FEVERDREAM_API UFDAttributeComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
+	
 	UFDAttributeComponent();
 
 protected:
@@ -33,20 +33,29 @@ protected:
 
 public:	
 	
-	UFUNCTION(BlueprintCallable)
-	bool bIsAlive() const;
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	static UFDAttributeComponent* GetAttributes(AActor* FromActor);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Attributes", meta = (DisplayName = "IsAlive"))
+	static bool IsActorAlive(AActor* FromActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	bool IsAlive() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
+	bool Kill(AActor* InstigatorActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	float GetHealth();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Attributes")
 	float GetMaxHealth();
 
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, Category = "Attributes")
 	FOnHealthChanged OnHealthChanged;
 	
 	// Call to change health
 	UFUNCTION(BlueprintCallable, Category = "Attributes")
-	bool ApplyHealthChange(float Delta);
+	bool ApplyHealthChange(AActor* InstigatorActor, float Delta);
 		
 };

@@ -19,16 +19,12 @@ class FEVERDREAM_API AFDMainCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
+
 	AFDMainCharacter();
 
 protected:
 
 	virtual void PostInitializeComponents() override;
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 
 	/**
 	 * Scene components
@@ -101,7 +97,7 @@ protected:
 	TSubclassOf<AActor>ProjectileClass;
 	
 	/** Space to select socket for Casting */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Casting")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Casting")
 	FName CastingSocket;
 
 	/** Casting Animation Montage */
@@ -125,15 +121,22 @@ protected:
 
 	void PrimaryInteract();
 
+	virtual FVector GetPawnViewLocation() const override;
+
 	UFUNCTION()
 	void OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float MaxHealth, float Delta);
 
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	/**
+	 * Debugging Console Commands
+	 */
+	 
+	UFUNCTION(Exec)
+	void HealSelf(float Amount = 100.0f);
 
 };
