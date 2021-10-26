@@ -9,6 +9,7 @@
 #include "Components/FDInteractionComponent.h"
 #include <DrawDebugHelpers.h>
 #include "Components/FDAttributeComponent.h"
+#include "ActionSystem/FDActionComponent.h"
 
 // Sets default values
 AFDMainCharacter::AFDMainCharacter()
@@ -32,6 +33,7 @@ AFDMainCharacter::AFDMainCharacter()
 
 	AttributeComp = CreateDefaultSubobject<UFDAttributeComponent>(TEXT("AttributeComp"));
 
+	ActionComp = CreateDefaultSubobject<UFDActionComponent>(TEXT("ActionComp"));
 
 	// Don't rotate when the camera rotates
 	// Let that just affect the camera
@@ -46,6 +48,10 @@ AFDMainCharacter::AFDMainCharacter()
 	// Set turn rates for input
 	BaseTurnRate = 65.f;
 	BaseLookUpRate = 65.f;
+
+	// Initialize casting variables
+	CastingSocketName = "CastingSocket";
+	CastingAnimDelay = 0.5f;
 }
 
 void AFDMainCharacter::PostInitializeComponents()
@@ -99,11 +105,13 @@ void AFDMainCharacter::LookUpRate(float Rate)
 
 void AFDMainCharacter::Casting()
 {
-	CalculateAim();
+// 	CalculateAim();
+// 
+// 	PlayAnimMontage(CastingAnim);
+// 
+// 	GetWorldTimerManager().SetTimer(TimerHandle_Casting, this, &AFDMainCharacter::Casting_TimeElapsed, CastingAnimDelay);
 
-	PlayAnimMontage(CastingAnim);
-
-	GetWorldTimerManager().SetTimer(TimerHandle_Casting, this, &AFDMainCharacter::Casting_TimeElapsed, 0.5f);
+	ActionComp->StartActionByName(this, "Casting");
 }
 
 void AFDMainCharacter::CalculateAim()
@@ -121,7 +129,7 @@ void AFDMainCharacter::CalculateAim()
 void AFDMainCharacter::Casting_TimeElapsed()
 {
 	// Find the location of the point from which to perform casting projectile
-	FVector CastingLocation = GetMesh()->GetSocketLocation(CastingSocket);
+	FVector CastingLocation = GetMesh()->GetSocketLocation(CastingSocketName);
 
 	// Only query objects with collision WorldDynamic and WorldStatic
 	FCollisionObjectQueryParams ObjectQueryParams;
@@ -175,6 +183,16 @@ void AFDMainCharacter::PrimaryInteract()
 
 }
 
+void AFDMainCharacter::SprintStart()
+{
+	ActionComp->StartActionByName(this, "Sprint");
+}
+
+void AFDMainCharacter::SprintStop()
+{
+	ActionComp->StopActionByName(this, "Sprint");
+}
+
 FVector AFDMainCharacter::GetPawnViewLocation() const
 {
 	return ActiveCamera->GetComponentLocation();
@@ -213,7 +231,8 @@ void AFDMainCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AFDMainCharacter::PrimaryInteract);
-
+	PlayerInputComponent->BindAction("Sprint", IE_Pressed, this, &AFDMainCharacter::SprintStart);
+	PlayerInputComponent->BindAction("Sprint", IE_Released, this, &AFDMainCharacter::SprintStop);
 }
 
 void AFDMainCharacter::HealSelf(float Amount /*= 100.0f*/)

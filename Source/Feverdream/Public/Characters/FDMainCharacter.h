@@ -11,6 +11,7 @@ class USpringArmComponent;
 class UCameraComponent;
 class UFDInteractionComponent;
 class UFDAttributeComponent;
+class UFDActionComponent;
 class UAnimMontage;
 
 UCLASS()
@@ -52,6 +53,10 @@ protected:
 	/** Attribute component for character's attributes and attribute adjustments */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UFDAttributeComponent* AttributeComp;
+
+	/** Action component for character's actions i.e. sprint */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UFDActionComponent* ActionComp;
 
 protected:
 
@@ -98,11 +103,15 @@ protected:
 	
 	/** Space to select socket for Casting */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Casting")
-	FName CastingSocket;
+	FName CastingSocketName;
 
 	/** Casting Animation Montage */
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* CastingAnim;
+
+	/** Casting Animation Delay */
+	UPROPERTY(EditAnywhere, Category = "Casting")
+	float CastingAnimDelay;
 
 	/** Timer for Casting Animation */
 	FTimerHandle TimerHandle_Casting;
@@ -113,13 +122,19 @@ protected:
 	/** Stores the target aim point of the player from their camera perspective */
 	FVector TargetViewPoint;
 
-	// used to calculate where the player is aiming
+	// Used to calculate where the player is aiming
 	void CalculateAim();
 
 	// Function called by timer to execute casting
 	void Casting_TimeElapsed();
 
 	void PrimaryInteract();
+
+	// Sprint start function implemented using the action system
+	void SprintStart();
+
+	// Sprint stop function implemented using the action system 
+	void SprintStop();
 
 	virtual FVector GetPawnViewLocation() const override;
 
