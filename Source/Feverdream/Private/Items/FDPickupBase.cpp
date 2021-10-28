@@ -4,6 +4,7 @@
 #include "Items/FDPickupBase.h"
 #include "Components/StaticMeshComponent.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 // Sets default values
@@ -16,6 +17,16 @@ AFDPickupBase::AFDPickupBase()
 	MeshEffect->SetupAttachment(MeshComp);
 
 /*	InteractionComponent = CreateDefaultSubobject<UFDInteractionComponent>(TEXT("InteractionComponent"));*/
+}
+
+void AFDPickupBase::PickUp()
+{
+	if (ensure(PickupEffect))
+	{
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PickupEffect, GetActorLocation(), GetActorRotation());
+	}
+
+	Destroy();
 }
 
 void AFDPickupBase::Interact_Implementation(APawn* InstigatorPawn)

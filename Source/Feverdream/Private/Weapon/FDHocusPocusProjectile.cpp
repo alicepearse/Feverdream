@@ -2,10 +2,13 @@
 
 
 #include "Weapon/FDHocusPocusProjectile.h"
-#include "Components/FDAttributeComponent.h"
 #include "Components/SphereComponent.h"
-#include "Weapon/FDProjectileBase.h"
+#include "Gameframework/ProjectileMovementComponent.h"
+#include "ActionSystem/FDActionComponent.h"
+#include "ActionSystem/FDActionEffect.h"
+#include "Components/FDAttributeComponent.h"
 #include "Framework/FDGameplayFunctionLibrary.h"
+#include "Weapon/FDProjectileBase.h"
 
 AFDHocusPocusProjectile::AFDHocusPocusProjectile()
 {
@@ -30,12 +33,27 @@ void AFDHocusPocusProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComp
 // 	
 // 			Explode();
 // 		}
+	
+		// Check for Parrying Tag if successful perform parry
+		UFDActionComponent* ActionComp = Cast<UFDActionComponent>(OtherActor->GetComponentByClass(UFDActionComponent::StaticClass()));
+		if (ActionComp && ActionComp->ActiveGameplayTags.HasTag(ParryTag))
+		{
+			// Reverse direction (deflect)
+			MovementComp->Velocity = -MovementComp->Velocity;
+
+			// Change instigator to other actor so the projectile will damage the new target actor (original instigator)
+			SetInstigator(Cast<APawn>(OtherActor));
+			return;
+		}
 
 		if (UFDGameplayFunctionLibrary::ApplyDirectionalDamage(GetInstigator(), OtherActor, DamageAmount, SweepResult))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Apply directional damage called"));
-
 			Explode();
+
+			if (ActionComp)
+			{
+				ActionComp->AddAction(OtherActor, BurningActionClass);
+			}
 		}
  	}
 }

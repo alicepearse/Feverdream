@@ -26,12 +26,7 @@ void AFDHealthPickup::Interact_Implementation(APawn* InstigatorPawn)
 		{
 			AttributeComp->ApplyHealthChange(this, 20.0f);
 
-			if (ensure(PickupEffect))
-			{
-				UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), PickupEffect, GetActorLocation(), GetActorRotation());
-			}
-
-			Destroy();
+			PickUp();
 		}
 	}
 }

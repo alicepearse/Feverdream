@@ -8,6 +8,7 @@
 #include "Components/FDAttributeComponent.h"
 #include "EngineUtils.h"
 #include "Characters/FDMainCharacter.h"
+#include "Framework/FDPlayerState.h"
 
 static TAutoConsoleVariable<bool>CVarSpawnBots(TEXT("fd.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
@@ -18,6 +19,7 @@ AFDGameModeBase::AFDGameModeBase()
 	MaxBotCount = 10.0f;
 
 	PlayerRespawnDelay = 2.0f;
+	KillCredits = 10;
 }
 
 
@@ -25,7 +27,21 @@ void AFDGameModeBase::StartPlay()
 {
 	Super::StartPlay();
 
+	// Respawn
 	GetWorldTimerManager().SetTimer(TimerHandle_SpawnBots, this, &AFDGameModeBase::SpawnBotTimerElapsed, SpawnTimeInterval, true);
+
+	// Spawn world items
+	// ensure an item class is assigned
+	if (ensure(ItemsToSpawnClasses.Num() > 0))
+	{
+		// Run EQS to find spawnable locations
+		UEnvQueryInstanceBlueprintWrapper* QueryInstance = UEnvQueryManager::RunEQSQuery(this, ItemSpawnLocationQuery, this, EEnvQueryRunMode::AllMatching, nullptr);
+		if (ensure(QueryInstance))
+		{
+			QueryInstance->GetOnQueryFinishedEvent().AddDynamic(this, &AFDGameModeBase::OnItemSpawnQueryCompleted);
+		}
+	}
+
 }
 
 void AFDGameModeBase::SpawnBotTimerElapsed()
@@ -96,8 +112,65 @@ void AFDGameModeBase::RespawnTimerElapsed(AController* PlayerController)
 	}
 }
 
+
+void AFDGameModeBase::OnItemSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus)
+{
+	if (QueryStatus != EEnvQueryStatus::Success)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Spawn items EQS query failed"));
+		return;
+	}
+
+	TArray<FVector> Locations = QueryInstance->GetResultsAsLocations();
+
+	TArray<FVector> UsedLocations;
+
+	int32 SpawnCounter = 0;
+
+	// Stop attempting to spawn items if MaxSpawnedItems count has been reached or there are no more potential locations remaining
+	while (SpawnCounter < MaxSpawnedItems && Locations.Num() > 0)
+	{
+		// Select random location from remaining Locations
+		int32 RandomLocationIndex = FMath::RandRange(0, Locations.Num() - 1);
+
+		FVector SelectedLocation = Locations[RandomLocationIndex];
+		// Remove selected location to avoid spawning more than once in the same location
+		Locations.RemoveAt(RandomLocationIndex);
+
+		// Check minimum distance requirement and find location that meets it
+		bool bValidLocation= true;
+		for (FVector OtherLocation : UsedLocations)
+		{
+			float DistanceBetween = (SelectedLocation - OtherLocation).Size();
+
+			if (DistanceBetween < MinItemDistanceApart)
+			{
+				bValidLocation = false;
+				break;
+			}
+		}
+
+		// If all locations failed the distance test
+		if (!bValidLocation)
+		{
+			continue;
+		}
+
+		// Pick a random ItemToSpawnClass
+		int32 RandomClassIndex = FMath::RandRange(0, ItemsToSpawnClasses.Num() - 1);
+		TSubclassOf<AActor> RandomItemToSpawnClass = ItemsToSpawnClasses[RandomClassIndex];
+
+		GetWorld()->SpawnActor<AActor>(RandomItemToSpawnClass, SelectedLocation, FRotator::ZeroRotator);
+
+		// Save location for distance checks
+		UsedLocations.Add(SelectedLocation);
+		SpawnCounter++;
+	}
+}
+
 void AFDGameModeBase::OnActorKilled(AActor* VictimActor, AActor* KillerActor)
 {
+	// Respawn player
 	AFDMainCharacter* Player = Cast<AFDMainCharacter>(VictimActor);
 	if (Player)
 	{
@@ -110,6 +183,18 @@ void AFDGameModeBase::OnActorKilled(AActor* VictimActor, AActor* KillerActor)
 	}
 
 	UE_LOG(LogTemp, Log, TEXT("On Actor Killed called: Victim %s, Killer %s"), *GetNameSafe(VictimActor), *GetNameSafe(KillerActor));
+
+	// Give credits for a kill
+	AFDMainCharacter* KillerPlayer = Cast<AFDMainCharacter>(KillerActor);
+	if (KillerPlayer)
+	{
+		AFDPlayerState* PS = Cast<AFDPlayerState>(KillerPlayer->GetPlayerState());
+		if (PS)
+		{
+			PS->AddCredits(KillCredits);
+		}
+	}
+
 }
 
 void AFDGameModeBase::KillAll()

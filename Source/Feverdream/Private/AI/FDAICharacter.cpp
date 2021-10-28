@@ -11,6 +11,7 @@
 #include "UI/FDworldUserWidget.h"
 #include "Components/CapsuleComponent.h"
 #include "Gameframework/CharacterMovementComponent.h"
+#include "ActionSystem/FDActionComponent.h"
 
 // Sets default values
 AFDAICharacter::AFDAICharacter()
@@ -18,6 +19,8 @@ AFDAICharacter::AFDAICharacter()
 	PawnSensingComponent = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
 
 	AttributeComp = CreateDefaultSubobject<UFDAttributeComponent>(TEXT("AttributeComp"));
+	
+	ActionComp = CreateDefaultSubobject<UFDActionComponent>(TEXT("ActionComp"));
 
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 

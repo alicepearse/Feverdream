@@ -51,8 +51,27 @@ protected:
 	 * Player
 	 */
 
-	 UPROPERTY(EditDefaultsOnly, Category = "Player")
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
 	float PlayerRespawnDelay;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	int32 KillCredits;
+
+	/**
+	 * World
+	 */
+
+	UPROPERTY(EditDefaultsOnly, Category = "World")
+	TArray<TSubclassOf<AActor>> ItemsToSpawnClasses;
+
+	UPROPERTY(EditDefaultsOnly, Category = "World")
+	UEnvQuery* ItemSpawnLocationQuery;
+
+	UPROPERTY(EditDefaultsOnly, Category = "World")
+	int32 MaxSpawnedItems;
+
+	UPROPERTY(EditDefaultsOnly, Category = "World")
+	float MinItemDistanceApart;
 
 public:
 	virtual void StartPlay() override;
@@ -67,6 +86,9 @@ protected:
 
 	UFUNCTION()
 	void RespawnTimerElapsed(AController* PlayerController);
+
+	UFUNCTION()
+	void OnItemSpawnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
 
 public:
 

@@ -31,6 +31,9 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	UParticleSystem* PickupEffect;
 
+	UFUNCTION()
+	void PickUp();
+
 public:
 
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;

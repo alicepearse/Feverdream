@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Weapon/FDProjectileBase.h"
+#include "GameplayTagContainer.h"
 #include "FDHocusPocusProjectile.generated.h"
 
 class UParticleSystem;
+class UFDActionEffect;
 
 UCLASS()
 class FEVERDREAM_API AFDHocusPocusProjectile : public AFDProjectileBase
@@ -21,6 +23,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
 	float DamageAmount;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	FGameplayTag ParryTag;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Projectile")
+	TSubclassOf<UFDActionEffect> BurningActionClass;
 	
 	virtual void PostInitializeComponents() override;
 

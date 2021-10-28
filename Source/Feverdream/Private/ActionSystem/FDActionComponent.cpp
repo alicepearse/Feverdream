@@ -12,7 +12,7 @@ UFDActionComponent::UFDActionComponent()
 }
 
 
-void UFDActionComponent::AddAction(TSubclassOf<UFDAction> ActionClass)
+void UFDActionComponent::AddAction(AActor* Instigator, TSubclassOf<UFDAction> ActionClass)
 {
 	if (!ensure(ActionClass))
 	{
@@ -23,7 +23,22 @@ void UFDActionComponent::AddAction(TSubclassOf<UFDAction> ActionClass)
 	if (ensure(NewAction))
 	{
 		Actions.Add(NewAction);
+
+		if (NewAction->bAutoStart && ensure(NewAction->CanStart(Instigator)))
+		{
+			NewAction->StartAction(Instigator);
+		}
 	}
+}
+
+void UFDActionComponent::RemoveAction(UFDAction* ActionToRemove)
+{
+	if (!ensure(ActionToRemove && !ActionToRemove->IsRunning()))
+	{
+		return;
+	}
+
+	Actions.Remove(ActionToRemove);
 }
 
 bool UFDActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
@@ -32,6 +47,13 @@ bool UFDActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 	{
 		if (Action && Action->ActionName == ActionName)
 		{
+			if (!Action->CanStart(Instigator))
+			{
+				FString FailedMsg = FString::Printf(TEXT("Failed to run : %s"), *ActionName.ToString());
+				GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Blue, FailedMsg);
+
+				continue;
+			}
 			Action->StartAction(Instigator);
 			return true;
 		}
@@ -46,8 +68,11 @@ bool UFDActionComponent::StopActionByName(AActor* Instigator, FName ActionName)
 	{
 		if (Action && Action->ActionName == ActionName)
 		{
-			Action->StopAction(Instigator);
-			return true;
+			if (Action->IsRunning())
+			{
+				Action->StopAction(Instigator);
+				return true;
+			}
 		}
 	}
 
@@ -60,7 +85,7 @@ void UFDActionComponent::BeginPlay()
 
 	for (TSubclassOf<UFDAction> ActionClass : DefaultActions)
 	{
-		AddAction(ActionClass);
+		AddAction(GetOwner(), ActionClass);
 	}
 	
 }
@@ -68,6 +93,9 @@ void UFDActionComponent::BeginPlay()
 void UFDActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	FString DebugMsg = GetNameSafe(GetOwner()) + " : " + ActiveGameplayTags.ToStringSimple();
+	GEngine->AddOnScreenDebugMessage(-1, 0.0f, FColor::Green, DebugMsg);
 
 }
 

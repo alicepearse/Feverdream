@@ -8,6 +8,7 @@
 
 class UPawnSensingComponent;
 class UFDAttributeComponent;
+class UFDActionComponent;
 class UUserWidget;
 class UFDworldUserWidget;
 
@@ -29,6 +30,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UPawnSensingComponent* PawnSensingComponent;
+
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	UFDActionComponent* ActionComp;
 
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	FName TimeToHitParameter;
