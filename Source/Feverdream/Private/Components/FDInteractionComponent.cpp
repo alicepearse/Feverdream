@@ -122,14 +122,25 @@ void UFDInteractionComponent::TickComponent(float DeltaTime, ELevelTick TickType
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	FindBestInteractable();
+
+	APawn* MyPawn = Cast<APawn>(GetOwner());
+	if (MyPawn->IsLocallyControlled())
+	{
+		FindBestInteractable();
+	}
+	
 
 
 }
 
 void UFDInteractionComponent::PrimaryInteract()
 {
-	if (FocusedActor == nullptr)
+	ServerInteract(FocusedActor);
+}
+
+void UFDInteractionComponent::ServerInteract_Implementation(AActor* InFocusActor)
+{
+	if (InFocusActor == nullptr)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "No focus actor to interact");
 		return;
@@ -137,7 +148,6 @@ void UFDInteractionComponent::PrimaryInteract()
 
 	APawn* MyPawn = Cast<APawn>(GetOwner());
 
-	IFDGameplayInterface::Execute_Interact(FocusedActor, MyPawn);
-
+	IFDGameplayInterface::Execute_Interact(InFocusActor, MyPawn);
 }
 

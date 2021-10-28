@@ -13,6 +13,8 @@
 AFDHocusPocusProjectile::AFDHocusPocusProjectile()
 {
 	DamageAmount = -20;
+
+	
 }
 
 void AFDHocusPocusProjectile::PostInitializeComponents()
@@ -50,7 +52,7 @@ void AFDHocusPocusProjectile::OnActorOverlap(UPrimitiveComponent* OverlappedComp
 		{
 			Explode();
 
-			if (ActionComp)
+			if (ActionComp && HasAuthority())
 			{
 				ActionComp->AddAction(OtherActor, BurningActionClass);
 			}

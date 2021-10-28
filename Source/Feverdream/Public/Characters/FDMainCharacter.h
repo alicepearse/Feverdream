@@ -139,7 +139,7 @@ protected:
 	virtual FVector GetPawnViewLocation() const override;
 
 	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float MaxHealth, float Delta);
+	void OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 
 public:	

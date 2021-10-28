@@ -47,5 +47,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void PrimaryInteract();
-		
+
+	UFUNCTION(Server, Reliable)
+	void ServerInteract(AActor* InFocusActor);
 };

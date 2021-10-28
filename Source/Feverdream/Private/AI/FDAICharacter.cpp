@@ -58,7 +58,7 @@ void AFDAICharacter::OnPawnSeen(APawn* Pawn)
 	DrawDebugString(GetWorld(), GetActorLocation(), TEXT("Player Spotted"), nullptr, FColor::White, 4.0f, true);
 }
 
-void AFDAICharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float MaxHealth, float Delta)
+void AFDAICharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float Delta)
 {
 	// Cause the character's material to flash when hit
 	if (Delta < 0.0f)

@@ -8,6 +8,23 @@
 #include "FDAction.generated.h"
 
 class UWorld;
+class UFDActionComponent;
+
+USTRUCT()
+struct FActionRepData
+{
+	GENERATED_BODY()
+
+public:
+
+	UPROPERTY()
+	bool bIsRunning;
+
+	UPROPERTY()
+	AActor* Instigator;
+
+};
+
 /**
  * 
  */
@@ -17,6 +34,9 @@ class FEVERDREAM_API UFDAction : public UObject
 	GENERATED_BODY()
 
 protected:
+	
+	UPROPERTY(Replicated)
+	UFDActionComponent* ActionComponent;
 
 	/** Tags applied to owning actor for the duration of the activated action */
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
@@ -26,11 +46,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 	FGameplayTagContainer BlocksTags;
 
-	bool bIsRunning;
-
+	UPROPERTY(ReplicatedUsing = "OnRep_RepData")
+	FActionRepData RepData;
+// 	bool bIsRunning;
 
 public:
-
+	
+	void Initialize(UFDActionComponent* NewActionComp);
 
 	/** Start immediately when added to an action component */
 	UPROPERTY(EditDefaultsOnly, Category = "Action")
@@ -54,7 +76,15 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Action")
 	bool IsRunning();
 
+	virtual bool IsSupportedForNetworking() const override
+	{
+		return true;
+	}
+
 protected:
+
+	UFUNCTION()
+	void OnRep_RepData();
 
 	UFUNCTION(BlueprintCallable, Category = "Tags")
 	UFDActionComponent* GetOwningComponent() const;

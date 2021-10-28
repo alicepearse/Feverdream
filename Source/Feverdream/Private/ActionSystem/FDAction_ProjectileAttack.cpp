@@ -75,17 +75,20 @@ void UFDAction_ProjectileAttack::StartAction_Implementation(AActor* Instigator)
 	Super::StartAction_Implementation(Instigator);
 
 	ACharacter* Character = Cast<ACharacter>(Instigator);
-	if (ensure(Character))
+	if (Character)
 	{
 		Character->PlayAnimMontage(CastingAnim);
 
 		UGameplayStatics::SpawnEmitterAttached(CastingFX, Character->GetMesh(), CastingSocketName, FVector::ZeroVector, FRotator::ZeroRotator, EAttachLocation::SnapToTarget);
 
-		FTimerHandle TimerHandle_CastingDelay;
-		FTimerDelegate Delegate;
-		Delegate.BindUFunction(this, "CastingDelay_Elapsed", Character);
+		if (Character->HasAuthority())
+		{
+			FTimerHandle TimerHandle_CastingDelay;
+			FTimerDelegate Delegate;
+			Delegate.BindUFunction(this, "CastingDelay_Elapsed", Character);
 
-		GetWorld()->GetTimerManager().SetTimer(TimerHandle_CastingDelay, Delegate, CastingAnimDelay, false);
+			GetWorld()->GetTimerManager().SetTimer(TimerHandle_CastingDelay, Delegate, CastingAnimDelay, false);
+		}
 	}
 }
 

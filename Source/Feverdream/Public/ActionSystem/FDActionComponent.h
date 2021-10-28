@@ -36,19 +36,28 @@ public:
 
 protected:
 	
+	UFUNCTION(Server, Reliable)
+	void ServerStartAction(AActor* Instigator, FName ActionName);
+
+	UFUNCTION(Server, Reliable)
+	void ServerStopAction(AActor* Instigator, FName ActionName);
+
 	/** Granted abilities at game start */
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<TSubclassOf<UFDAction>> DefaultActions;
 	
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TArray<UFDAction*> Actions;
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	/** Allows a component to replicate other subobject on the actor  */
+	virtual bool ReplicateSubobjects(class UActorChannel* Channel, class FOutBunch* Bunch, FReplicationFlags* RepFlags) override;
 		
 };

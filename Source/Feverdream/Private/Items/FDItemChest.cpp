@@ -2,6 +2,7 @@
 
 
 #include "Items/FDItemChest.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AFDItemChest::AFDItemChest()
@@ -24,24 +25,25 @@ AFDItemChest::AFDItemChest()
 	// Initialize default values
 	TargetPitchOpenLid = 110.f;
 
+	SetReplicates(true);
+
 }
 
-// Called when the game starts or when spawned
-void AFDItemChest::BeginPlay()
+void AFDItemChest::OnRep_LidOpened()
 {
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AFDItemChest::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
+	float CurrentPitch = bIsLidOpen ? TargetPitchOpenLid : 0.0f;
+	ChestLid->SetRelativeRotation(FRotator(0.0f, 0.0f, CurrentPitch));
 }
 
 void AFDItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
-	ChestLid->SetRelativeRotation(FRotator(0.0f, 0.0f, TargetPitchOpenLid));
+	bIsLidOpen = !bIsLidOpen;
+	OnRep_LidOpened();
 }
 
+void AFDItemChest::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFDItemChest, bIsLidOpen);
+}

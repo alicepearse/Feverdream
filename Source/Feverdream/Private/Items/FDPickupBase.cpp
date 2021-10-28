@@ -16,6 +16,8 @@ AFDPickupBase::AFDPickupBase()
 	MeshEffect = CreateDefaultSubobject<UParticleSystemComponent>(TEXT("MeshEffect"));
 	MeshEffect->SetupAttachment(MeshComp);
 
+	SetReplicates(true);
+
 /*	InteractionComponent = CreateDefaultSubobject<UFDInteractionComponent>(TEXT("InteractionComponent"));*/
 }
 

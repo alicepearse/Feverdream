@@ -31,6 +31,6 @@ protected:
 	UFDAttributeComponent* AttributeComp;
 
 	UFUNCTION()
-	void OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float NewMaxHealth, float Delta);
+	void OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float Delta);
 
 };
