@@ -3,6 +3,7 @@
 
 #include "ActionSystem/FDActionEffect.h"
 #include "ActionSystem/FDActionComponent.h"
+#include "GameFramework/GameStateBase.h"
 
 UFDActionEffect::UFDActionEffect()
 {
@@ -54,4 +55,16 @@ void UFDActionEffect::StopAction_Implementation(AActor* Instigator)
 void UFDActionEffect::ExecutePeriodicEffect_Implementation(AActor* Instigator)
 {
 	
+}
+
+float UFDActionEffect::GetTimeRemaining() const
+{
+	AGameStateBase* GameState = GetWorld()->GetGameState<AGameStateBase>();
+	if (GameState)
+	{
+		float EndTime = TimeStarted + Duration;
+		return EndTime - GameState->GetServerWorldTimeSeconds();
+	}
+
+	return Duration;
 }

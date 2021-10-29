@@ -9,6 +9,8 @@
 
 class UFDAction;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnActionStateChanged, UFDActionComponent*, OwningComp, UFDAction*, Action);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FEVERDREAM_API UFDActionComponent : public UActorComponent
 {
@@ -46,13 +48,19 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "Actions")
 	TArray<TSubclassOf<UFDAction>> DefaultActions;
 	
-	UPROPERTY(Replicated)
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	TArray<UFDAction*> Actions;
 
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActionStateChanged OnActionStarted;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnActionStateChanged OnActionStopped;
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

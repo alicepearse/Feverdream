@@ -24,6 +24,18 @@ protected:
 
 	virtual void SetPawn(APawn* InPawn) override;
 
+	/**
+	 * Menu 
+	 */
+
+	 UPROPERTY(EditDefaultsOnly, Category = "UI")
+	 TSubclassOf<UUserWidget> PauseMenuClass;
+
+	 UPROPERTY()
+	 UUserWidget* PauseMenuInstance;
 	
-	
+	UFUNCTION(BlueprintCallable)
+	void TogglePauseMenu();
+
+	virtual void SetupInputComponent() override;
 };

@@ -34,6 +34,9 @@ class FEVERDREAM_API UFDAction : public UObject
 	GENERATED_BODY()
 
 protected:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+	UTexture2D* ActionIcon;
 	
 	UPROPERTY(Replicated)
 	UFDActionComponent* ActionComponent;
@@ -45,6 +48,9 @@ protected:
 	/** Will block any action with these tags applied to owning actor */
 	UPROPERTY(EditDefaultsOnly, Category = "Tags")
 	FGameplayTagContainer BlocksTags;
+
+	UPROPERTY(Replicated)
+	float TimeStarted;
 
 	UPROPERTY(ReplicatedUsing = "OnRep_RepData")
 	FActionRepData RepData;
@@ -88,4 +94,6 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "Tags")
 	UFDActionComponent* GetOwningComponent() const;
+
+
 };
