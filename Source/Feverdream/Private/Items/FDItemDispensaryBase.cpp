@@ -40,6 +40,11 @@ void AFDItemDispensaryBase::SetDispensaryState(bool bNewIsActivated)
 }
 
 
+FText AFDItemDispensaryBase::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::GetEmpty();
+}
+
 void AFDItemDispensaryBase::Interact_Implementation(APawn* InstigatorPawn)
 {
 	if (ensure(DispensedItemsClass))

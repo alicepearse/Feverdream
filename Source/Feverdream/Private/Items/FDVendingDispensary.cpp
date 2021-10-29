@@ -5,6 +5,8 @@
 #include "Characters/FDMainCharacter.h"
 #include "Framework/FDPlayerState.h"
 
+#define LOCTEXT_NAMESPACE "InteractableActors"
+
 AFDVendingDispensary::AFDVendingDispensary()
 {
 	GlassMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("GlassMeshFixed"));
@@ -26,6 +28,11 @@ void AFDVendingDispensary::ReactivateDispensary()
 	Super::ReactivateDispensary();
 
 	GlassMesh->SetStaticMesh(GlassMeshUnbroken);
+}
+
+FText AFDVendingDispensary::GetInteractText_Implementation(APawn* InstigatorPawn)
+{
+	return FText::Format(LOCTEXT("VendingDispensary_InteractMessage", "Cost {0} Credits"), CreditCost);
 }
 
 void AFDVendingDispensary::Interact_Implementation(APawn* InstigatorPawn)
@@ -51,3 +58,5 @@ void AFDVendingDispensary::Interact_Implementation(APawn* InstigatorPawn)
 		}
 	}
 }
+
+#undef LOCTEXT_NAMESPACE
