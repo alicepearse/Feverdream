@@ -3,16 +3,20 @@
 
 #include "Components/FDAttributeComponent.h"
 #include "Framework/FDGameModeBase.h"
+#include "Net/UnrealNetwork.h"
 
 static TAutoConsoleVariable<float>CVarDamageMultiplier(TEXT("fd.DamageMultiplier"), 1.0f, TEXT("Global Damage Modifier for Attribute Component."), ECVF_Cheat);
 
-// Sets default values for this component's properties
 UFDAttributeComponent::UFDAttributeComponent()
 {
 	// Set default variables
 	Health = 100.0f;
 	MaxHealth = 100.0f;
+
+	// Networking
+	SetIsReplicatedByDefault(true);
 }
+
 
 UFDAttributeComponent* UFDAttributeComponent::GetAttributes(AActor* FromActor)
 {
@@ -71,25 +75,43 @@ bool UFDAttributeComponent::ApplyHealthChange(AActor* InstigatorActor, float Del
 	}
 
 	float OldHealth = Health;
+	float NewHealth = FMath::Clamp(Health + Delta, 0.0f, MaxHealth);
+	float ActualDelta = NewHealth - OldHealth;
 
-	Health += Delta;
-
-	Health = FMath::Clamp(Health + Delta, 0.0f, MaxHealth);
-
-	float ActualDelta = Health - OldHealth;
-
-	OnHealthChanged.Broadcast(InstigatorActor, this, Health, MaxHealth, ActualDelta);
-
-	// Died
-	if (ActualDelta < 0.0f && Health == 0.0f)
+	// [Server]
+	if (GetOwner()->HasAuthority())
 	{
-		AFDGameModeBase* GM = GetWorld()->GetAuthGameMode<AFDGameModeBase>();
-		if (GM)
+		Health = NewHealth;
+
+		if (ActualDelta != 0.0f)
 		{
-			GM->OnActorKilled(GetOwner(), InstigatorActor);
+			MulticastHealthChanged(InstigatorActor, Health, ActualDelta);
+		}
+
+		// Died
+		if (ActualDelta < 0.0f && Health == 0.0f)
+		{
+			AFDGameModeBase* GM = GetWorld()->GetAuthGameMode<AFDGameModeBase>();
+			if (GM)
+			{
+				GM->OnActorKilled(GetOwner(), InstigatorActor);
+			}
 		}
 	}
 
 	return ActualDelta != 0.0f;
 }
 
+void UFDAttributeComponent::MulticastHealthChanged_Implementation(AActor* InstigatorActor, float NewHealth, float Delta)
+{
+	OnHealthChanged.Broadcast(InstigatorActor, this, NewHealth, Delta);
+}
+
+void UFDAttributeComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UFDAttributeComponent, Health);
+	DOREPLIFETIME(UFDAttributeComponent, MaxHealth);
+
+}

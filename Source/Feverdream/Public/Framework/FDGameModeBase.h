@@ -11,6 +11,7 @@
 class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
 class UCurveFloat;
+class UFDSaveGame;
 
 /**
  * 
@@ -100,5 +101,28 @@ public:
 
 	UFUNCTION(Exec)
 	void KillAll();
+
+
+	/**
+	 * Save/Load Game
+	 */
+
+protected:
+	
+	FString SlotName;
+
+	UPROPERTY()
+	UFDSaveGame* CurrentSavedGame;
+
+public:
+
+	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
+
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+
+	UFUNCTION(BlueprintCallable, Category = "Save Game")
+	void WriteSaveGame();
+
+	void LoadSaveGame();
 	
 };

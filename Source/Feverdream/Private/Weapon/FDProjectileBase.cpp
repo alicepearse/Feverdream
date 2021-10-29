@@ -28,6 +28,9 @@ AFDProjectileBase::AFDProjectileBase()
 
 	// Initial Values
 	Lifespan = 5.0f;
+
+	// Networking
+	SetReplicates(true);
 }
 
 void AFDProjectileBase::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)

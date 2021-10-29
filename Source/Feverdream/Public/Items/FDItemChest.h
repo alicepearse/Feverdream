@@ -34,17 +34,24 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* ChestLidInterior;
 
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+	UPROPERTY(ReplicatedUsing = "OnRep_LidOpened", BlueprintReadOnly, SaveGame)
+	bool bIsLidOpen;
+
+	UFUNCTION()
+	void OnRep_LidOpened();
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
 	virtual void Interact_Implementation(APawn* InstigatorPawn) override;
 
 	/** The target pitch value for the open lid animation of the chest */
 	UPROPERTY(EditAnywhere)
 	float TargetPitchOpenLid;
+
+	/**
+	 * Save/Load
+	 */
+
+	 void OnActorLoaded_Implementation();
 
 };

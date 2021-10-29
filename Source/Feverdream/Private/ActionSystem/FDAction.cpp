@@ -3,7 +3,14 @@
 
 #include "ActionSystem/FDAction.h"
 #include "ActionSystem/FDActionComponent.h"
+#include "../Feverdream.h"
+#include "Net/UnrealNetwork.h"
 
+
+void UFDAction::Initialize(UFDActionComponent* NewActionComp)
+{
+	ActionComponent = NewActionComp;
+}
 
 bool UFDAction::CanStart_Implementation(AActor* Instigator)
 {
@@ -24,34 +31,40 @@ bool UFDAction::CanStart_Implementation(AActor* Instigator)
 void UFDAction::StartAction_Implementation(AActor* Instigator)
 {
 	UE_LOG(LogTemp, Log, TEXT("StartAction called"));
+	
+// 	LogOnScreen(this, FString::Printf(TEXT("Started: %s"), *ActionName.ToString()), FColor::Green);
 
 	UFDActionComponent* ActionComp = GetOwningComponent();
 	ActionComp->ActiveGameplayTags.AppendTags(GrantsTags);
 /*	ActionComp->ActiveGameplayTags.AppendTags(BlocksTags);*/
 
-	bIsRunning = true;
+	RepData.bIsRunning = true;
+	RepData.Instigator = Instigator;
 }
 
 void UFDAction::StopAction_Implementation(AActor* Instigator)
 {
 	UE_LOG(LogTemp, Log, TEXT("StopAction called"));
 
-	ensureAlways(bIsRunning);
+// 	LogOnScreen(this, FString::Printf(TEXT("Stopped: %s"), *ActionName.ToString()), FColor::White);
+
+// 	ensureAlways(bIsRunning);
 
 	UFDActionComponent* ActionComp = GetOwningComponent();
 	ActionComp->ActiveGameplayTags.RemoveTags(GrantsTags);
 /*	ActionComp->ActiveGameplayTags.RemoveTags(BlocksTags);*/
 
-	bIsRunning = false;
+	RepData.bIsRunning = false;
+	RepData.Instigator = Instigator;
 }
 
 UWorld* UFDAction::GetWorld() const
 {
 	// Outer is set when creating new action object 
-	UActorComponent* Comp = Cast<UActorComponent>(GetOuter());
-	if (Comp)
+	AActor* Actor = Cast<AActor>(GetOuter());
+	if (Actor)
 	{
-		return Comp->GetWorld();
+		return Actor->GetWorld();
 	}
 
 	return nullptr;
@@ -59,10 +72,31 @@ UWorld* UFDAction::GetWorld() const
 
 bool UFDAction::IsRunning()
 {
-	return bIsRunning;
+	return RepData.bIsRunning;
+}
+
+
+void UFDAction::OnRep_RepData()
+{
+	if (RepData.bIsRunning)
+	{
+		StartAction(RepData.Instigator);
+	}
+	else
+	{
+		StopAction(RepData.Instigator);
+	}
 }
 
 UFDActionComponent* UFDAction::GetOwningComponent() const
 {
-	return Cast<UFDActionComponent>(GetOuter());
+	return ActionComponent;
+}
+
+void UFDAction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UFDAction, RepData);
+	DOREPLIFETIME(UFDAction, ActionComponent);
 }

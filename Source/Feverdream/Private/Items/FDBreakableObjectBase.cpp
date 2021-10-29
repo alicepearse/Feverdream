@@ -22,7 +22,7 @@ AFDBreakableObjectBase::AFDBreakableObjectBase()
 
 }
 
-void AFDBreakableObjectBase::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float NewMaxHealth, float Delta)
+void AFDBreakableObjectBase::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float Delta)
 {
 	if (Delta < 0.0f)
 	{

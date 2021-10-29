@@ -13,7 +13,7 @@ bool UFDGameplayFunctionLibrary::ApplyDamage(AActor* DamageCauser, AActor* Targe
 	UFDAttributeComponent* AttributeComp = UFDAttributeComponent::GetAttributes(TargetActor);
 	if (AttributeComp)
 	{
-		return AttributeComp->ApplyHealthChange(DamageCauser, DamageAmount);
+		return AttributeComp->ApplyHealthChange(DamageCauser, -DamageAmount);
 	}
 	return false;
 }

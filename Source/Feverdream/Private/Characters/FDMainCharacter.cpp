@@ -198,7 +198,7 @@ FVector AFDMainCharacter::GetPawnViewLocation() const
 	return ActiveCamera->GetComponentLocation();
 }
 
-void AFDMainCharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float NewMaxHealth, float Delta)
+void AFDMainCharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComponent* OwningComp, float NewHealth, float Delta)
 {
 	// Cause the character's material to flash when hit
 	if (Delta < 0.0f)
@@ -211,6 +211,8 @@ void AFDMainCharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComp
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
+
+		SetLifeSpan(5.0f);
 	}
 }
 

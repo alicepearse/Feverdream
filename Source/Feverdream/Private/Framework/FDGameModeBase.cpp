@@ -9,6 +9,12 @@
 #include "EngineUtils.h"
 #include "Characters/FDMainCharacter.h"
 #include "Framework/FDPlayerState.h"
+#include "Framework/FDSaveGame.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/GameStateBase.h"
+#include "UI/FDGameplayInterface.h"
+#include "Serialization/ObjectAndNameAsStringProxyArchive.h"
+
 
 static TAutoConsoleVariable<bool>CVarSpawnBots(TEXT("fd.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
 
@@ -20,6 +26,8 @@ AFDGameModeBase::AFDGameModeBase()
 
 	PlayerRespawnDelay = 2.0f;
 	KillCredits = 10;
+
+	SlotName = "SaveGame01";
 }
 
 
@@ -208,5 +216,123 @@ void AFDGameModeBase::KillAll()
 		{
 			AttributeComp->Kill(this); // TODO: Pass in player for kill credit?
 		}
+	}
+}
+
+void AFDGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
+{
+	Super::InitGame(MapName, Options, ErrorMessage);
+
+	LoadSaveGame();
+}
+
+void AFDGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+
+	AFDPlayerState* PlayerState = NewPlayer->GetPlayerState<AFDPlayerState>();
+	if (PlayerState)
+	{
+		PlayerState->LoadPlayerState(CurrentSavedGame);
+	}
+}
+
+void AFDGameModeBase::WriteSaveGame()
+{
+	// iterate over all player states
+	for (int32 i = 0; i < GameState->PlayerArray.Num(); i++)
+	{
+		AFDPlayerState* PS = Cast<AFDPlayerState>(GameState->PlayerArray[i]);
+		if (PS)
+		{
+			PS->SavePlayerState(CurrentSavedGame);
+			break; // Single player only at this point
+		}
+	}
+
+	CurrentSavedGame->SavedActors.Empty();
+
+	// Iterate over the entire world of actors
+	for (FActorIterator It(GetWorld()); It; ++It)
+	{
+		AActor* Actor = *It;
+		// Only interested in our gameplay actors
+		if (!Actor->Implements<UFDGameplayInterface>())
+		{
+			continue;
+		}
+
+		// Manual serialize
+		FActorSaveData ActorData;
+		ActorData.ActorName = Actor->GetName();
+		ActorData.Transform = Actor->GetActorTransform();
+
+		// Auto serialize
+		FMemoryWriter MemWriter(ActorData.ByteData);
+
+		FObjectAndNameAsStringProxyArchive Ar(MemWriter, true);
+		// Only find properties marked with UPROPERTY(SaveGame)
+		Ar.ArIsSaveGame = true;
+		// Converts actor's save game UPROPERTIES into binary array
+		Actor->Serialize(Ar);
+
+		CurrentSavedGame->SavedActors.Add(ActorData);
+	}
+
+	UGameplayStatics::SaveGameToSlot(CurrentSavedGame, SlotName, 0);
+}
+
+void AFDGameModeBase::LoadSaveGame()
+{
+	if (UGameplayStatics::DoesSaveGameExist(SlotName, 0))
+	{
+		CurrentSavedGame = Cast<UFDSaveGame>(UGameplayStatics::LoadGameFromSlot(SlotName, 0));
+		if (CurrentSavedGame == nullptr)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load save game data"))
+			return;
+		}
+
+		UE_LOG(LogTemp, Log, TEXT("Loaded save game data"));
+
+		// Iterate over the entire world of actors
+		for (FActorIterator It(GetWorld()); It; ++It)
+		{
+			AActor* Actor = *It;
+			// Only interested in our gameplay actors
+			if (!Actor->Implements<UFDGameplayInterface>())
+			{
+				continue;
+			}
+
+			for (FActorSaveData ActorData : CurrentSavedGame->SavedActors)
+			{
+				if (ActorData.ActorName == Actor->GetName())
+				{
+					// Manual Serialize
+					Actor->SetActorTransform(ActorData.Transform);
+
+
+					// Auto serialize
+					FMemoryReader MemReader(ActorData.ByteData);
+
+					FObjectAndNameAsStringProxyArchive Ar(MemReader, true);
+					Ar.ArIsSaveGame = true;
+					// Converts binary array back into actor's variables
+					Actor->Serialize(Ar);
+
+					IFDGameplayInterface::Execute_OnActorLoaded(Actor);
+
+					break;
+				}
+
+			}
+		}
+	}
+	else
+	{
+		CurrentSavedGame = Cast<UFDSaveGame>(UGameplayStatics::CreateSaveGameObject(UFDSaveGame::StaticClass()));
+
+		UE_LOG(LogTemp, Log, TEXT("Created new save game data"));
 	}
 }
