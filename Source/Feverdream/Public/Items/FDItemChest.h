@@ -34,7 +34,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* ChestLidInterior;
 
-	UPROPERTY(ReplicatedUsing = "OnRep_LidOpened", BlueprintReadOnly)
+	UPROPERTY(ReplicatedUsing = "OnRep_LidOpened", BlueprintReadOnly, SaveGame)
 	bool bIsLidOpen;
 
 	UFUNCTION()
@@ -47,5 +47,11 @@ public:
 	/** The target pitch value for the open lid animation of the chest */
 	UPROPERTY(EditAnywhere)
 	float TargetPitchOpenLid;
+
+	/**
+	 * Save/Load
+	 */
+
+	 void OnActorLoaded_Implementation();
 
 };

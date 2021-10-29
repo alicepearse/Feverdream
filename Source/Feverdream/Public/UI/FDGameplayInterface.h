@@ -25,4 +25,12 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void Interact(APawn* InstigatorPawn);
+
+	/**
+	 * Save/Load 
+	 */
+
+	 // called after the actor state was restored from a save game file
+	 UFUNCTION(BlueprintNativeEvent)
+	 void OnActorLoaded();
 };

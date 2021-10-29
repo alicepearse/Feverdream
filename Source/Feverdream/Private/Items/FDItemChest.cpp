@@ -35,6 +35,11 @@ void AFDItemChest::OnRep_LidOpened()
 	ChestLid->SetRelativeRotation(FRotator(0.0f, 0.0f, CurrentPitch));
 }
 
+void AFDItemChest::OnActorLoaded_Implementation()
+{
+	OnRep_LidOpened();
+}
+
 void AFDItemChest::Interact_Implementation(APawn* InstigatorPawn)
 {
 	bIsLidOpen = !bIsLidOpen;

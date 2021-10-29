@@ -211,6 +211,8 @@ void AFDMainCharacter::OnHealthChanged(AActor* InstigatorActor, UFDAttributeComp
 	{
 		APlayerController* PC = Cast<APlayerController>(GetController());
 		DisableInput(PC);
+
+		SetLifeSpan(5.0f);
 	}
 }
 

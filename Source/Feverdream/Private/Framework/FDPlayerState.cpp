@@ -2,13 +2,14 @@
 
 
 #include "Framework/FDPlayerState.h"
+#include "Framework/FDSaveGame.h"
 
 AFDPlayerState::AFDPlayerState()
 {
 	PlayerCredits = 0;
 }
 
-int32 AFDPlayerState::GetPlayerCredits()
+int32 AFDPlayerState::GetPlayerCredits() const
 {
 	return PlayerCredits;
 }
@@ -43,5 +44,21 @@ bool AFDPlayerState::RemoveCredits(int32 DeltaCredits)
 	OnCreditsChanged.Broadcast(this, PlayerCredits, -DeltaCredits);
 
 	return true;
+}
+
+void AFDPlayerState::SavePlayerState_Implementation(UFDSaveGame* SaveObject)
+{
+	if (SaveObject)
+	{
+		SaveObject->Credits = PlayerCredits;
+	}
+}
+
+void AFDPlayerState::LoadPlayerState_Implementation(UFDSaveGame* SaveObject)
+{
+	if (SaveObject)
+	{
+		PlayerCredits = SaveObject->Credits;
+	}
 }
 
