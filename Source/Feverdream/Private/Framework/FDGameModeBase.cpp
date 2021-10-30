@@ -14,6 +14,9 @@
 #include "GameFramework/GameStateBase.h"
 #include "UI/FDGameplayInterface.h"
 #include "Serialization/ObjectAndNameAsStringProxyArchive.h"
+#include "AI/FDAIEnemyData.h"
+#include "ActionSystem/FDActionComponent.h"
+#include "Engine/AssetManager.h"
 
 
 static TAutoConsoleVariable<bool>CVarSpawnBots(TEXT("fd.SpawnBots"), true, TEXT("Enable spawning of bots via timer."), ECVF_Cheat);
@@ -72,7 +75,7 @@ void AFDGameModeBase::SpawnBotTimerElapsed()
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Found %i Bots"), NumAliveBots);
+// 	UE_LOG(LogTemp, Warning, TEXT("Found %i Bots"), NumAliveBots);
 
 	if (DifficultyCurve)
 	{
@@ -81,7 +84,7 @@ void AFDGameModeBase::SpawnBotTimerElapsed()
 
 	if (NumAliveBots >= MaxBotCount)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("At max bot count. Skipping spawn"));
+/*		UE_LOG(LogTemp, Warning, TEXT("At max bot count. Skipping spawn"));*/
 		return;
 	}
 
@@ -106,8 +109,57 @@ void AFDGameModeBase::OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryI
 
 	if (Locations.IsValidIndex(0))
 	{
-		GetWorld()->SpawnActor<AActor>(AIEnemyClass, Locations[0], FRotator::ZeroRotator);
+		if (AIEnemyTable)
+		{
+			TArray<FAIEnemyInfoRow*> Rows;
+			AIEnemyTable->GetAllRows("", Rows);
+
+			// Get a random enemy 
+			int32 RandomIndex = FMath::RandRange(0, Rows.Num() - 1);
+			FAIEnemyInfoRow* SelectedRow = Rows[RandomIndex];
+
+			// Async load data
+			UAssetManager* Manager = UAssetManager::GetIfValid();
+			if (Manager)
+			{
+				TArray<FName> Bundles;
+
+				FStreamableDelegate Delegate = FStreamableDelegate::CreateUObject(this, &AFDGameModeBase::OnAIEnemyLoaded, SelectedRow->AIEnemyID, Locations[0]);
+
+				Manager->LoadPrimaryAsset(SelectedRow->AIEnemyID, Bundles, Delegate);
+			}
+
+		}
+
 	}
+}
+
+void AFDGameModeBase::OnAIEnemyLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation)
+{
+
+	UAssetManager* Manager = UAssetManager::GetIfValid();
+	if (Manager)
+	{
+		UFDAIEnemyData* AIEnemyData = Cast<UFDAIEnemyData>(Manager->GetPrimaryAssetObject(LoadedId));
+		if (AIEnemyData)
+		{
+			AActor* NewAIEnemy = GetWorld()->SpawnActor<AActor>(AIEnemyData->AIEnemyClass, SpawnLocation, FRotator::ZeroRotator);
+			if (NewAIEnemy)
+			{
+				// Grant Actions etc
+				UFDActionComponent* ActionComp = Cast<UFDActionComponent>(NewAIEnemy->GetComponentByClass(UFDActionComponent::StaticClass()));
+				if (ActionComp)
+				{
+					for (TSubclassOf<UFDAction> ActionClass : AIEnemyData->Actions)
+					{
+						ActionComp->AddAction(NewAIEnemy, ActionClass);
+					}
+				}
+			}
+		}
+	}
+
+
 }
 
 void AFDGameModeBase::RespawnTimerElapsed(AController* PlayerController)
@@ -222,6 +274,12 @@ void AFDGameModeBase::KillAll()
 void AFDGameModeBase::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
+
+	FString SelectedSaveSlot = UGameplayStatics::ParseOption(Options, "SaveGame");
+	if (SelectedSaveSlot.Len() > 0)
+	{
+		SlotName = SelectedSaveSlot;
+	}
 
 	LoadSaveGame();
 }

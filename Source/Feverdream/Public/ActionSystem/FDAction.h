@@ -36,7 +36,7 @@ class FEVERDREAM_API UFDAction : public UObject
 protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
-	UTexture2D* ActionIcon;
+	TSoftObjectPtr<UTexture2D> ActionIcon;
 	
 	UPROPERTY(Replicated)
 	UFDActionComponent* ActionComponent;

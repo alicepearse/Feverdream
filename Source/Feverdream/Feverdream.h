@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 
+DECLARE_STATS_GROUP(TEXT("FEVERDREAM_Game"), STATGROUP_FEVERDREAM, STATCAT_Advanced);
+
 // Debug function for action system networking
 static void LogOnScreen(UObject* WorldContext, FString Msg, FColor Color = FColor::White, float Duration = 5.0f)
 {

@@ -12,7 +12,9 @@
 
 AFDHocusPocusProjectile::AFDHocusPocusProjectile()
 {
-	DamageAmount = -20;
+	DamageAmount = -20.0f;
+
+	InitialLifeSpan = 10.0f;
 
 	
 }

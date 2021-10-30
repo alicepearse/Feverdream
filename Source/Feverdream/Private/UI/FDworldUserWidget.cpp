@@ -22,7 +22,8 @@ void UFDworldUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 
 	FVector2D ScreenPosition;
 	FVector DesiredWidgetLocation = AttachedActor->GetActorLocation() + WorldOffset;
-	if (UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), DesiredWidgetLocation, ScreenPosition))
+	bool bIsOnScreen = UGameplayStatics::ProjectWorldToScreen(GetOwningPlayer(), DesiredWidgetLocation, ScreenPosition);
+	if (bIsOnScreen)
 	{
 		// Rescale the widget position to the current screen size
 		float Scale = UWidgetLayoutLibrary::GetViewportScale(this);
@@ -32,5 +33,10 @@ void UFDworldUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTi
 		{
 			ParentSizeBox->SetRenderTranslation(ScreenPosition);
 		}
+	}
+
+	if (ParentSizeBox)
+	{
+		ParentSizeBox ->SetVisibility(bIsOnScreen ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
 	}
 }

@@ -7,6 +7,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/ActorChannel.h"
 
+DECLARE_CYCLE_STAT(TEXT("StartActionByName"), STAT_StartActionByName, STATGROUP_FEVERDREAM);
+
 // Sets default values for this component's properties
 UFDActionComponent::UFDActionComponent()
 {
@@ -57,6 +59,8 @@ void UFDActionComponent::RemoveAction(UFDAction* ActionToRemove)
 
 bool UFDActionComponent::StartActionByName(AActor* Instigator, FName ActionName)
 {
+	SCOPE_CYCLE_COUNTER(STAT_StartActionByName);
+
 	for (UFDAction* Action : Actions)
 	{
 		if (Action && Action->ActionName == ActionName)
@@ -131,6 +135,21 @@ void UFDActionComponent::BeginPlay()
 	}
 }
 
+
+void UFDActionComponent::EndPlay(const EEndPlayReason::Type EEndPlayReason)
+{
+	// Stop all
+	TArray<UFDAction*> ActionsCopy = Actions;
+	for (UFDAction* Action : ActionsCopy)
+	{
+		if (Action && Action->IsRunning())
+		{
+			Action->StopAction(GetOwner());
+		}
+	}
+	
+	Super::EndPlay(EEndPlayReason);
+}
 
 void UFDActionComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

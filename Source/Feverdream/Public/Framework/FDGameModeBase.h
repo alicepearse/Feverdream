@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "EnvironmentQuery/EnvQueryTypes.h"
+#include "Engine/DataTable.h"
 #include "FDGameModeBase.generated.h"
 
 
@@ -12,6 +13,42 @@ class UEnvQuery;
 class UEnvQueryInstanceBlueprintWrapper;
 class UCurveFloat;
 class UFDSaveGame;
+class UDataTable;
+class UFDAIEnemyData;
+
+/** DataTable Row for spawning AIEnemy in game mode */
+USTRUCT(BlueprintType)
+struct FAIEnemyInfoRow : public FTableRowBase
+{
+	GENERATED_BODY()
+
+public:
+	
+	FAIEnemyInfoRow()
+	{
+		Weight = 1.0f;
+		SpawnCost = 5.0f;
+		KillReward = 20.0f;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FPrimaryAssetId AIEnemyID;
+
+// 	UFDAIEnemyData* AIEnemyData;
+// 	TSubclassOf<AActor>AIEnemyClass;
+
+	/** Relative chance to pick this AIEnemy */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float Weight;
+
+	/** Points required by game mode to spawn this unit */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float SpawnCost;
+
+	/** Amount of credits awarded to killer of this unit */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float KillReward;
+};
 
 /**
  * 
@@ -31,6 +68,10 @@ protected:
 	 * AI Enemy
 	 */
 
+	/** All available AIEnemy */
+	UPROPERTY(EditDefaultsOnly, Category = "AI")
+	UDataTable* AIEnemyTable;
+
 	FTimerHandle TimerHandle_SpawnBots;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
@@ -42,8 +83,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	float MaxBotCount;
 
-	UPROPERTY(EditDefaultsOnly, Category = "AI")
-	TSubclassOf<AActor> AIEnemyClass;
+// 	UPROPERTY(EditDefaultsOnly, Category = "AI")
+// 	TSubclassOf<AActor> AIEnemyClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = "AI")
 	UCurveFloat* DifficultyCurve;
@@ -84,6 +125,9 @@ protected:
 
 	UFUNCTION()
 	void OnQueryCompleted(UEnvQueryInstanceBlueprintWrapper* QueryInstance, EEnvQueryStatus::Type QueryStatus);
+
+	/** Function called when AIEnemy data is loaded */
+	void OnAIEnemyLoaded(FPrimaryAssetId LoadedId, FVector SpawnLocation);
 
 	UFUNCTION()
 	void RespawnTimerElapsed(AController* PlayerController);
